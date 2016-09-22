@@ -4,6 +4,8 @@ Simple go program and docker image to run speedtest-cli and store in a sqlite da
 
 It runs [speedtest-cli](https://github.com/sivel/speedtest-cli) and stores the output in a sqlite database that will be used to create fancy graphs
 
+I wanted to implement [this](http://blog.kedrosky.com/playing-with-pi) while learning some go
+
 ## Build go program
 
 ```
