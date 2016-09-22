@@ -1,22 +1,22 @@
 package main
 
 import (
+	"database/sql"
 	"fmt"
+	_ "github.com/mattn/go-sqlite3"
 	"os"
 	"os/exec"
-    "strings"
-    "database/sql"
-    _ "github.com/mattn/go-sqlite3"
-    "time"
-    "strconv"
+	"strconv"
+	"strings"
+	"time"
 )
 
 type NetTest struct {
-    Id          int
-    InsertedDatetime time.Time
-    Ping        float64
-    Download    float64
-    Upload      float64
+	Id               int
+	InsertedDatetime time.Time
+	Ping             float64
+	Download         float64
+	Upload           float64
 }
 
 func speedtest() (results string) {
@@ -31,21 +31,25 @@ func speedtest() (results string) {
 		os.Exit(1)
 	}
 	results = string(cmdOut)
-    return
+	return
 }
 
 func convert(results string) (ping, download, upload float64) {
-    output := strings.Split(results,"\n")
-    ping,_ = strconv.ParseFloat(strings.Split(output[0]," ")[1],64)
-    download,_ = strconv.ParseFloat(strings.Split(output[1]," ")[1],64)
-    upload,_ = strconv.ParseFloat(strings.Split(output[2]," ")[1],64)
-    return
+	output := strings.Split(results, "\n")
+	ping, _ = strconv.ParseFloat(strings.Split(output[0], " ")[1], 64)
+	download, _ = strconv.ParseFloat(strings.Split(output[1], " ")[1], 64)
+	upload, _ = strconv.ParseFloat(strings.Split(output[2], " ")[1], 64)
+	return
 }
 
 func InitDB(filepath string) *sql.DB {
 	db, err := sql.Open("sqlite3", filepath)
-	if err != nil { panic(err) }
-	if db == nil { panic("db nil") }
+	if err != nil {
+		panic(err)
+	}
+	if db == nil {
+		panic("db nil")
+	}
 	return db
 }
 
@@ -62,7 +66,9 @@ func CreateTable(db *sql.DB) {
 	`
 
 	_, err := db.Exec(sql_table)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 }
 
 func StoreItem(db *sql.DB, items []NetTest) {
@@ -77,12 +83,16 @@ func StoreItem(db *sql.DB, items []NetTest) {
 	`
 
 	stmt, err := db.Prepare(sql_additem)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 	defer stmt.Close()
 
 	for _, item := range items {
 		_, err2 := stmt.Exec(nil, item.Ping, item.Download, item.Upload)
-		if err2 != nil { panic(err2) }
+		if err2 != nil {
+			panic(err2)
+		}
 	}
 }
 
@@ -93,30 +103,34 @@ func ReadItem(db *sql.DB) []NetTest {
 	`
 
 	rows, err := db.Query(sql_readall)
-	if err != nil { panic(err) }
+	if err != nil {
+		panic(err)
+	}
 	defer rows.Close()
 
 	var result []NetTest
 	for rows.Next() {
 		item := NetTest{}
 		err2 := rows.Scan(&item.Id, &item.InsertedDatetime, &item.Ping, &item.Download, &item.Upload)
-		if err2 != nil { panic(err2) }
+		if err2 != nil {
+			panic(err2)
+		}
 		result = append(result, item)
 	}
 	return result
 }
 
 func main() {
-    ping,download,upload := convert(speedtest())
+	ping, download, upload := convert(speedtest())
 
-    const dbpath = "/data/nettests.db"
+	const dbpath = "/data/nettests.db"
 
 	db := InitDB(dbpath)
 	defer db.Close()
 	CreateTable(db)
 
 	items := []NetTest{
-		NetTest{0,time.Now(),ping,download,upload},
+		NetTest{0, time.Now(), ping, download, upload},
 	}
 	StoreItem(db, items)
 
