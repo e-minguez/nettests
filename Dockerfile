@@ -7,7 +7,8 @@ RUN curl -Lo /usr/local/bin/speedtest-cli https://raw.githubusercontent.com/sive
     useradd foo && \
     chown foo:foo /data
 
-ADD nettests /nettests
+RUN curl -Lo /nettests https://github.com/e-minguez/nettests/releases/download/v0.0.1/nettests && \
+    chmod a+x /nettests
 
 USER foo
 
